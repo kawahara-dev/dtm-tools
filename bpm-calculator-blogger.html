@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BPM・小節・秒数計算ツール（Blogger貼り付け用）</title>
+    <style>
+      .bpm-tool-wrapper {
+        --bg: #f5fbf7;
+        --card-bg: #ffffff;
+        --text-main: #203127;
+        --text-sub: #4d6759;
+        --primary: #4ba57f;
+        --primary-dark: #32795b;
+        --border: #d6e8dc;
+        --error: #c84141;
+        --shadow: 0 8px 24px rgba(38, 109, 79, 0.08);
+        margin: 0;
+        font-family: "Noto Sans JP", system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text-main);
+        line-height: 1.6;
+      }
+
+      .bpm-tool-wrapper *,
+      .bpm-tool-wrapper *::before,
+      .bpm-tool-wrapper *::after {
+        box-sizing: border-box;
+      }
+
+      .bpm-tool-wrapper .container {
+        width: min(960px, 92%);
+        margin: 0 auto;
+        padding: 1rem 0;
+      }
+
+      .bpm-tool-wrapper .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+      }
+
+      .bpm-tool-wrapper h1 {
+        margin: 0;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+      }
+
+      .bpm-tool-wrapper p {
+        margin: 0.5rem 0 0;
+      }
+
+      .bpm-tool-wrapper h2 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+      }
+
+      .bpm-tool-wrapper .description {
+        color: var(--text-sub);
+      }
+
+      .bpm-tool-wrapper .form-grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .bpm-tool-wrapper .form-group label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 0.35rem;
+      }
+
+      .bpm-tool-wrapper .form-group input,
+      .bpm-tool-wrapper .form-group select {
+        width: 100%;
+        border: 1px solid #bdd7c8;
+        border-radius: 10px;
+        padding: 0.6rem 0.75rem;
+        font-size: 1rem;
+        font-family: inherit;
+        color: var(--text-main);
+        background: #fff;
+      }
+
+      .bpm-tool-wrapper .form-group input:focus,
+      .bpm-tool-wrapper .form-group select:focus,
+      .bpm-tool-wrapper .copy-button:focus,
+      .bpm-tool-wrapper .preset-button:focus {
+        outline: 3px solid rgba(75, 165, 127, 0.3);
+        outline-offset: 1px;
+      }
+
+      .bpm-tool-wrapper .preset-area {
+        margin-top: 1rem;
+      }
+
+      .bpm-tool-wrapper .preset-title {
+        margin: 0;
+        font-weight: 500;
+      }
+
+      .bpm-tool-wrapper .preset-buttons {
+        margin-top: 0.55rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .bpm-tool-wrapper .preset-button,
+      .bpm-tool-wrapper .copy-button {
+        border: none;
+        border-radius: 999px;
+        padding: 0.5rem 0.9rem;
+        font-size: 0.95rem;
+        font-family: inherit;
+        background: #e1f2e9;
+        color: var(--primary-dark);
+        cursor: pointer;
+      }
+
+      .bpm-tool-wrapper .copy-button {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .bpm-tool-wrapper .preset-button:hover,
+      .bpm-tool-wrapper .copy-button:hover {
+        filter: brightness(0.97);
+      }
+
+      .bpm-tool-wrapper .error-message {
+        min-height: 1.5em;
+        margin: 0.75rem 0 0;
+        color: var(--error);
+        font-weight: 500;
+      }
+
+      .bpm-tool-wrapper .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .bpm-tool-wrapper .copy-status {
+        min-height: 1.25rem;
+        margin: 0 0 0.75rem;
+        color: var(--text-sub);
+      }
+
+      .bpm-tool-wrapper .result-list {
+        margin: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+      }
+
+      .bpm-tool-wrapper .result-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.8rem;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.7rem 0.8rem;
+        background: #fcfffd;
+      }
+
+      .bpm-tool-wrapper .result-row dt {
+        font-weight: 500;
+      }
+
+      .bpm-tool-wrapper .result-row dd {
+        margin: 0;
+        font-feature-settings: "tnum";
+        text-align: right;
+      }
+
+      @media (max-width: 760px) {
+        .bpm-tool-wrapper .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .bpm-tool-wrapper .result-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.2rem;
+        }
+
+        .bpm-tool-wrapper .result-row dd {
+          text-align: left;
+        }
+
+        .bpm-tool-wrapper .result-header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .bpm-tool-wrapper .copy-button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bpm-tool-wrapper" id="bpm-tool-wrapper">
+      <main class="container">
+        <section class="card" aria-labelledby="tool-title">
+          <h1 id="tool-title">BPM・小節・秒数計算ツール</h1>
+          <p class="description">
+            BPMと小節数から、曲のセクションの長さをサクッと確認しよう。
+          </p>
+        </section>
+
+        <section class="card" aria-labelledby="input-heading">
+          <h2 id="input-heading">入力</h2>
+          <form id="bpm-form" novalidate>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="bpm-input">BPM</label>
+                <input
+                  id="bpm-input"
+                  name="bpm"
+                  type="number"
+                  min="1"
+                  max="400"
+                  value="120"
+                  inputmode="decimal"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="bars-input">小節数</label>
+                <input
+                  id="bars-input"
+                  name="bars"
+                  type="number"
+                  min="1"
+                  max="2000"
+                  value="16"
+                  inputmode="decimal"
+                  required
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="time-signature">拍子</label>
+                <select id="time-signature" name="timeSignature">
+                  <option value="4/4" selected>4/4</option>
+                  <option value="3/4">3/4</option>
+                  <option value="6/8">6/8</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="preset-area" aria-label="BPMプリセット">
+              <p class="preset-title">BPMプリセット</p>
+              <div class="preset-buttons">
+                <button type="button" class="preset-button" data-bpm="80">80</button>
+                <button type="button" class="preset-button" data-bpm="90">90</button>
+                <button type="button" class="preset-button" data-bpm="100">100</button>
+                <button type="button" class="preset-button" data-bpm="120">120</button>
+                <button type="button" class="preset-button" data-bpm="128">128</button>
+                <button type="button" class="preset-button" data-bpm="140">140</button>
+                <button type="button" class="preset-button" data-bpm="160">160</button>
+              </div>
+            </div>
+
+            <p
+              id="error-message"
+              class="error-message"
+              role="alert"
+              aria-live="assertive"
+            ></p>
+          </form>
+        </section>
+
+        <section class="card" aria-labelledby="result-heading">
+          <div class="result-header">
+            <h2 id="result-heading">計算結果</h2>
+            <button id="copy-button" class="copy-button" type="button">
+              結果をコピー
+            </button>
+          </div>
+          <p id="copy-status" class="copy-status" aria-live="polite"></p>
+          <dl id="result-list" class="result-list"></dl>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      (() => {
+        "use strict";
+
+        const wrapper = document.getElementById("bpm-tool-wrapper");
+        if (!wrapper) {
+          return;
+        }
+
+        const bpmForm = wrapper.querySelector("#bpm-form");
+        if (!bpmForm) {
+          return;
+        }
+
+        const bpmInput = wrapper.querySelector("#bpm-input");
+        const barsInput = wrapper.querySelector("#bars-input");
+        const timeSignatureSelect = wrapper.querySelector("#time-signature");
+        const errorMessage = wrapper.querySelector("#error-message");
+        const resultList = wrapper.querySelector("#result-list");
+        const copyButton = wrapper.querySelector("#copy-button");
+        const copyStatus = wrapper.querySelector("#copy-status");
+        const presetButtons = wrapper.querySelectorAll(".preset-button");
+
+        const BASE_NOTE_BY_SIGNATURE = {
+          "4/4": 4,
+          "3/4": 4,
+          "6/8": 8,
+        };
+
+        const BAR_BEATS_BY_SIGNATURE = {
+          "4/4": 4,
+          "3/4": 3,
+          "6/8": 6,
+        };
+
+        const FIXED_BAR_SETS = [8, 16, 32, 64];
+
+        function isPositiveNumber(value) {
+          return Number.isFinite(value) && value > 0;
+        }
+
+        function secondsToMinuteFormat(totalSeconds) {
+          const secondsFloor = Math.floor(totalSeconds);
+          const minutes = Math.floor(secondsFloor / 60);
+          const seconds = secondsFloor % 60;
+          return minutes + ":" + String(seconds).padStart(2, "0");
+        }
+
+        function formatResultSeconds(seconds) {
+          return seconds.toFixed(2) + "秒 / " + secondsToMinuteFormat(seconds);
+        }
+
+        function calculateDurations(values) {
+          const barBeats = BAR_BEATS_BY_SIGNATURE[values.timeSignature];
+          const beatUnit = BASE_NOTE_BY_SIGNATURE[values.timeSignature];
+          const beatSeconds = (60 / values.bpm) * (4 / beatUnit);
+          const barSeconds = beatSeconds * barBeats;
+
+          return {
+            beatSeconds: beatSeconds,
+            barSeconds: barSeconds,
+            inputBarsSeconds: barSeconds * values.bars,
+            fixedBars: FIXED_BAR_SETS.map((fixedBars) => ({
+              bars: fixedBars,
+              seconds: barSeconds * fixedBars,
+            })),
+          };
+        }
+
+        function createResultRows(durations, inputBars) {
+          const rows = [
+            { label: "1拍の長さ", value: durations.beatSeconds.toFixed(2) + "秒" },
+            { label: "1小節の長さ", value: durations.barSeconds.toFixed(2) + "秒" },
+            {
+              label: inputBars + "小節の長さ",
+              value: formatResultSeconds(durations.inputBarsSeconds),
+            },
+          ].concat(
+            durations.fixedBars.map((item) => ({
+              label: item.bars + "小節の長さ",
+              value: formatResultSeconds(item.seconds),
+            }))
+          );
+
+          resultList.innerHTML = rows
+            .map(
+              (row) =>
+                '<div class="result-row"><dt>' +
+                row.label +
+                "</dt><dd>" +
+                row.value +
+                "</dd></div>"
+            )
+            .join("");
+
+          return rows;
+        }
+
+        function getInputValues() {
+          return {
+            bpm: Number.parseFloat(bpmInput.value),
+            bars: Number.parseFloat(barsInput.value),
+            timeSignature: timeSignatureSelect.value,
+          };
+        }
+
+        function validateInputs(values) {
+          if (!isPositiveNumber(values.bpm)) {
+            return "BPMは1以上の数値で入力してね。";
+          }
+          if (!isPositiveNumber(values.bars)) {
+            return "小節数は1以上の数値で入力してね。";
+          }
+          if (!BAR_BEATS_BY_SIGNATURE[values.timeSignature]) {
+            return "拍子の選択が正しくありません。";
+          }
+          return "";
+        }
+
+        function updateResults() {
+          const values = getInputValues();
+          const validationError = validateInputs(values);
+          if (validationError) {
+            errorMessage.textContent = validationError;
+            resultList.innerHTML = "";
+            copyStatus.textContent = "";
+            return null;
+          }
+
+          errorMessage.textContent = "";
+          const durations = calculateDurations(values);
+          return createResultRows(durations, values.bars);
+        }
+
+        async function copyResults() {
+          const rows = updateResults();
+          if (!rows) {
+            copyStatus.textContent = "入力を確認してからコピーしてね。";
+            return;
+          }
+
+          const copyText = rows.map((row) => row.label + ": " + row.value).join("\n");
+          try {
+            await navigator.clipboard.writeText(copyText);
+            copyStatus.textContent = "計算結果をコピーしたよ！";
+          } catch (error) {
+            copyStatus.textContent =
+              "コピーに失敗しました。手動で選択してコピーしてください。";
+          }
+        }
+
+        function handlePresetClick(event) {
+          const bpm = event.currentTarget.dataset.bpm;
+          bpmInput.value = bpm;
+          updateResults();
+        }
+
+        bpmForm.addEventListener("input", updateResults);
+        timeSignatureSelect.addEventListener("change", updateResults);
+        copyButton.addEventListener("click", copyResults);
+        presetButtons.forEach((button) => {
+          button.addEventListener("click", handlePresetClick);
+        });
+
+        updateResults();
+      })();
+    </script>
+  </body>
+</html>
