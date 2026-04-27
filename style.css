@@ -1,0 +1,261 @@
+:root {
+  --bg: #f5fbf7;
+  --card-bg: #ffffff;
+  --text-main: #203127;
+  --text-sub: #4d6759;
+  --primary: #4ba57f;
+  --primary-dark: #32795b;
+  --border: #d6e8dc;
+  --error: #c84141;
+  --shadow: 0 8px 24px rgba(38, 109, 79, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Noto Sans JP", system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text-main);
+  line-height: 1.6;
+}
+
+.container {
+  width: min(960px, 92%);
+  margin: 0 auto;
+}
+
+.site-header {
+  padding: 2rem 0 1.5rem;
+}
+
+.site-title {
+  margin: 0;
+  font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+}
+
+.site-description {
+  margin: 0.75rem 0 0;
+  color: var(--text-sub);
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  color: var(--primary-dark);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.back-link:hover,
+.back-link:focus-visible {
+  text-decoration: underline;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.tool-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.tool-item {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+  background: #fbfffd;
+}
+
+.tool-item h3 {
+  margin: 0;
+}
+
+.tool-item p {
+  margin: 0.4rem 0 0;
+  color: var(--text-sub);
+}
+
+.tool-link {
+  font-weight: 700;
+  color: var(--primary-dark);
+  text-decoration: none;
+}
+
+.tool-link:hover,
+.tool-link:focus-visible {
+  text-decoration: underline;
+}
+
+.soon-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #eaf6ef;
+  color: var(--primary-dark);
+  font-weight: 500;
+}
+
+.form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  border: 1px solid #bdd7c8;
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--text-main);
+  background: #fff;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.copy-button:focus,
+.preset-button:focus {
+  outline: 3px solid rgba(75, 165, 127, 0.3);
+  outline-offset: 1px;
+}
+
+.preset-area {
+  margin-top: 1rem;
+}
+
+.preset-title {
+  margin: 0;
+  font-weight: 500;
+}
+
+.preset-buttons {
+  margin-top: 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.preset-button,
+.copy-button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background: #e1f2e9;
+  color: var(--primary-dark);
+  cursor: pointer;
+}
+
+.copy-button {
+  background: var(--primary);
+  color: #fff;
+}
+
+.preset-button:hover,
+.copy-button:hover {
+  filter: brightness(0.97);
+}
+
+.error-message {
+  min-height: 1.5em;
+  margin: 0.75rem 0 0;
+  color: var(--error);
+  font-weight: 500;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.copy-status {
+  min-height: 1.25rem;
+  margin: 0 0 0.75rem;
+  color: var(--text-sub);
+}
+
+.result-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
+  background: #fcfffd;
+}
+
+.result-row dt {
+  font-weight: 500;
+}
+
+.result-row dd {
+  margin: 0;
+  font-feature-settings: "tnum";
+  text-align: right;
+}
+
+@media (max-width: 760px) {
+  .site-header {
+    padding-top: 1.4rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .result-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+
+  .result-row dd {
+    text-align: left;
+  }
+
+  .result-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .copy-button {
+    width: 100%;
+  }
+}
