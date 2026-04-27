@@ -15,12 +15,6 @@
   const copyStatus = document.getElementById('copy-status');
   const presetButtons = document.querySelectorAll('.preset-button');
 
-  const BASE_NOTE_BY_SIGNATURE = {
-    '4/4': 4,
-    '3/4': 4,
-    '6/8': 8,
-  };
-
   const BAR_BEATS_BY_SIGNATURE = {
     '4/4': 4,
     '3/4': 3,
@@ -46,10 +40,8 @@
 
   function calculateDurations({ bpm, bars, timeSignature }) {
     const barBeats = BAR_BEATS_BY_SIGNATURE[timeSignature];
-    const beatUnit = BASE_NOTE_BY_SIGNATURE[timeSignature];
-
-    // BPMを四分音符基準とし、拍子の分母で1拍の長さを補正
-    const beatSeconds = (60 / bpm) * (4 / beatUnit);
+    // 入力されたBPMを1拍あたりの速さとして扱う
+    const beatSeconds = 60 / bpm;
     const barSeconds = beatSeconds * barBeats;
 
     return {
