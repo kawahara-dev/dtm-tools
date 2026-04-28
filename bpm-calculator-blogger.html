@@ -271,12 +271,7 @@
               </div>
             </div>
 
-            <p
-              id="error-message"
-              class="error-message"
-              role="alert"
-              aria-live="assertive"
-            ></p>
+            <p id="error-message" class="error-message" role="alert" aria-live="assertive"></p>
           </form>
         </section>
 
@@ -316,12 +311,6 @@
         const copyStatus = wrapper.querySelector("#copy-status");
         const presetButtons = wrapper.querySelectorAll(".preset-button");
 
-        const BASE_NOTE_BY_SIGNATURE = {
-          "4/4": 4,
-          "3/4": 4,
-          "6/8": 8,
-        };
-
         const BAR_BEATS_BY_SIGNATURE = {
           "4/4": 4,
           "3/4": 3,
@@ -338,22 +327,21 @@
           const secondsFloor = Math.floor(totalSeconds);
           const minutes = Math.floor(secondsFloor / 60);
           const seconds = secondsFloor % 60;
-          return minutes + ":" + String(seconds).padStart(2, "0");
+          return `${minutes}:${String(seconds).padStart(2, "0")}`;
         }
 
         function formatResultSeconds(seconds) {
-          return seconds.toFixed(2) + "秒 / " + secondsToMinuteFormat(seconds);
+          return `${seconds.toFixed(2)}秒 / ${secondsToMinuteFormat(seconds)}`;
         }
 
         function calculateDurations(values) {
           const barBeats = BAR_BEATS_BY_SIGNATURE[values.timeSignature];
-          const beatUnit = BASE_NOTE_BY_SIGNATURE[values.timeSignature];
-          const beatSeconds = (60 / values.bpm) * (4 / beatUnit);
+          const beatSeconds = 60 / values.bpm;
           const barSeconds = beatSeconds * barBeats;
 
           return {
-            beatSeconds: beatSeconds,
-            barSeconds: barSeconds,
+            beatSeconds,
+            barSeconds,
             inputBarsSeconds: barSeconds * values.bars,
             fixedBars: FIXED_BAR_SETS.map((fixedBars) => ({
               bars: fixedBars,
@@ -364,27 +352,26 @@
 
         function createResultRows(durations, inputBars) {
           const rows = [
-            { label: "1拍の長さ", value: durations.beatSeconds.toFixed(2) + "秒" },
-            { label: "1小節の長さ", value: durations.barSeconds.toFixed(2) + "秒" },
+            { label: "1拍の長さ", value: `${durations.beatSeconds.toFixed(2)}秒` },
+            { label: "1小節の長さ", value: `${durations.barSeconds.toFixed(2)}秒` },
             {
-              label: inputBars + "小節の長さ",
+              label: `${inputBars}小節の長さ`,
               value: formatResultSeconds(durations.inputBarsSeconds),
             },
-          ].concat(
-            durations.fixedBars.map((item) => ({
-              label: item.bars + "小節の長さ",
+            ...durations.fixedBars.map((item) => ({
+              label: `${item.bars}小節の長さ`,
               value: formatResultSeconds(item.seconds),
-            }))
-          );
+            })),
+          ];
 
           resultList.innerHTML = rows
             .map(
-              (row) =>
-                '<div class="result-row"><dt>' +
-                row.label +
-                "</dt><dd>" +
-                row.value +
-                "</dd></div>"
+              (row) => `
+                <div class="result-row">
+                  <dt>${row.label}</dt>
+                  <dd>${row.value}</dd>
+                </div>
+              `
             )
             .join("");
 
@@ -403,18 +390,22 @@
           if (!isPositiveNumber(values.bpm)) {
             return "BPMは1以上の数値で入力してね。";
           }
+
           if (!isPositiveNumber(values.bars)) {
             return "小節数は1以上の数値で入力してね。";
           }
+
           if (!BAR_BEATS_BY_SIGNATURE[values.timeSignature]) {
             return "拍子の選択が正しくありません。";
           }
+
           return "";
         }
 
         function updateResults() {
           const values = getInputValues();
           const validationError = validateInputs(values);
+
           if (validationError) {
             errorMessage.textContent = validationError;
             resultList.innerHTML = "";
@@ -429,12 +420,14 @@
 
         async function copyResults() {
           const rows = updateResults();
+
           if (!rows) {
             copyStatus.textContent = "入力を確認してからコピーしてね。";
             return;
           }
 
-          const copyText = rows.map((row) => row.label + ": " + row.value).join("\n");
+          const copyText = rows.map((row) => `${row.label}: ${row.value}`).join("\n");
+
           try {
             await navigator.clipboard.writeText(copyText);
             copyStatus.textContent = "計算結果をコピーしたよ！";
@@ -445,7 +438,7 @@
         }
 
         function handlePresetClick(event) {
-          const bpm = event.currentTarget.dataset.bpm;
+          const { bpm } = event.currentTarget.dataset;
           bpmInput.value = bpm;
           updateResults();
         }
@@ -453,6 +446,7 @@
         bpmForm.addEventListener("input", updateResults);
         timeSignatureSelect.addEventListener("change", updateResults);
         copyButton.addEventListener("click", copyResults);
+
         presetButtons.forEach((button) => {
           button.addEventListener("click", handlePresetClick);
         });
