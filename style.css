@@ -259,3 +259,12 @@ h2 {
     width: 100%;
   }
 }
+
+.transpose-description {
+  margin-top: 0.9rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #f7fcf9;
+  color: var(--text-sub);
+}
