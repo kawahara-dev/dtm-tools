@@ -23,6 +23,27 @@
 
   const FIXED_BAR_SETS = [8, 16, 32, 64];
 
+  async function writeTextToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    const isCopied = document.execCommand('copy');
+    document.body.removeChild(textarea);
+
+    if (!isCopied) {
+      throw new Error('copy failed');
+    }
+  }
+
   function isPositiveNumber(value) {
     return Number.isFinite(value) && value > 0;
   }
@@ -134,7 +155,7 @@
     const copyText = rows.map((row) => `${row.label}: ${row.value}`).join('\n');
 
     try {
-      await navigator.clipboard.writeText(copyText);
+      await writeTextToClipboard(copyText);
       copyStatus.textContent = '計算結果をコピーしたよ！';
     } catch (error) {
       copyStatus.textContent = 'コピーに失敗しました。手動で選択してコピーしてください。';
@@ -177,6 +198,28 @@
   const shiftUpButton = document.getElementById('shift-up-button');
   const shiftDownButton = document.getElementById('shift-down-button');
   const resetButton = document.getElementById('transpose-reset-button');
+
+
+  async function writeTextToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    const isCopied = document.execCommand('copy');
+    document.body.removeChild(textarea);
+
+    if (!isCopied) {
+      throw new Error('copy failed');
+    }
+  }
 
   const KEY_LABELS = [
     'C',
@@ -300,7 +343,7 @@
     const copyText = rows.map((row) => `${row.label}：${row.value}`).join('\n');
 
     try {
-      await navigator.clipboard.writeText(copyText);
+      await writeTextToClipboard(copyText);
       copyStatus.textContent = '結果をコピーしたよ！';
     } catch (error) {
       copyStatus.textContent = 'コピーに失敗しました。手動で選択してコピーしてください。';
