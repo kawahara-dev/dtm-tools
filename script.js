@@ -269,12 +269,6 @@
   }
 
 
-  function decodeJapanesePunctuationEntities(text) {
-    return String(text)
-      .replace(/&#12290;|&#x3002;/gi, '。')
-      .replace(/&#12289;|&#x3001;/gi, '、');
-  }
-
   function formatSemitoneShift(value) {
     return `${value > 0 ? '+' : ''}${value}`;
   }
@@ -288,12 +282,17 @@
   function buildDescriptionText(result) {
     const absShift = Math.abs(result.semitoneShift);
     const directionText = result.semitoneShift > 0 ? '上げる' : '下げる';
+    const jpPeriod = '\u3002';
+    const jpComma = '\u3001';
 
     if (result.semitoneShift === 0) {
-      return `${result.baseKey}${result.mode}は移動量が0半音なので、${result.transposedKey}${result.mode}のままです。`;
+      return `${result.baseKey}${result.mode}は移動量が0半音なので${jpComma}${result.transposedKey}${result.mode}のままです${jpPeriod}`;
     }
 
-    return `${result.baseKey}${result.mode}を${absShift}半音${directionText}と${result.transposedKey}${result.mode}になります。曲全体のコードやメロディも同じだけ移動すると、雰囲気を保ったままキー変更できます。`;
+    return (
+      `${result.baseKey}${result.mode}を${absShift}半音${directionText}と${result.transposedKey}${result.mode}になります${jpPeriod}` +
+      `曲全体のコードやメロディも同じだけ移動すると${jpComma}雰囲気を保ったままキー変更できます${jpPeriod}`
+    );
   }
 
   function renderTransposeResult(result) {
@@ -315,7 +314,7 @@
       )
       .join('');
 
-    transposeDescription.textContent = decodeJapanesePunctuationEntities(buildDescriptionText(result));
+    transposeDescription.textContent = buildDescriptionText(result);
 
     return rows;
   }
@@ -347,10 +346,10 @@
       return;
     }
 
-    const copyText = decodeJapanesePunctuationEntities([
+    const copyText = [
       ...rows.map((row) => `${row.label}：${row.value}`),
       `コメント：${transposeDescription.textContent}`
-    ].join('\n'));
+    ].join('\n');
 
     try {
       await writeTextToClipboard(copyText);
