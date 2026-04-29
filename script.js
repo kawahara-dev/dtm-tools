@@ -268,6 +268,13 @@
     return '';
   }
 
+
+  function decodeJapanesePunctuationEntities(text) {
+    return String(text)
+      .replace(/&#12290;|&#x3002;/gi, '。')
+      .replace(/&#12289;|&#x3001;/gi, '、');
+  }
+
   function formatSemitoneShift(value) {
     return `${value > 0 ? '+' : ''}${value}`;
   }
@@ -308,7 +315,7 @@
       )
       .join('');
 
-    transposeDescription.textContent = buildDescriptionText(result);
+    transposeDescription.textContent = decodeJapanesePunctuationEntities(buildDescriptionText(result));
 
     return rows;
   }
@@ -340,7 +347,10 @@
       return;
     }
 
-    const copyText = rows.map((row) => `${row.label}：${row.value}`).join('\n');
+    const copyText = decodeJapanesePunctuationEntities([
+      ...rows.map((row) => `${row.label}：${row.value}`),
+      `コメント：${transposeDescription.textContent}`
+    ].join('\n'));
 
     try {
       await writeTextToClipboard(copyText);
