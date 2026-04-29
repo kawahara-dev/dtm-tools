@@ -472,9 +472,12 @@
     },
   };
 
+  const JP_COLON = '\uFF1A';
+  const JP_PERIOD = '\u3002';
+
   const MODE_COMMENTS = {
-    メジャー: '明るく王道感のあるコード進行です。Aメロやサビの土台として使いやすいです。',
-    マイナー: '少しエモくて深みのある進行です。静かなAメロや切ない展開にハマりやすいです。',
+    メジャー: `明るく王道感のあるコード進行です${JP_PERIOD}Aメロやサビの土台として使いやすいです${JP_PERIOD}`,
+    マイナー: `少しエモくて深みのある進行です${JP_PERIOD}静かなAメロや切ない展開にハマりやすいです${JP_PERIOD}`,
   };
 
   function getRootNote(label) {
@@ -548,7 +551,7 @@
     ];
 
     resultList.innerHTML = rows.map((row) => `\n      <div class="result-row"><dt>${row.label}</dt><dd>${row.value}</dd></div>\n    `).join('');
-    commentText.textContent = `コメント：${result.comment}`;
+    commentText.textContent = `コメント${JP_COLON}${result.comment}`;
     return rows;
   }
 
@@ -559,7 +562,7 @@
       return;
     }
 
-    const text = rows.map((row) => `${row.querySelector('dt').textContent}：${row.querySelector('dd').textContent}`).join('\n') + `\n${commentText.textContent}`;
+    const text = rows.map((row) => `${row.querySelector('dt').textContent}${JP_COLON}${row.querySelector('dd').textContent}`).join('\n') + `\n${commentText.textContent}`;
 
     try {
       await navigator.clipboard.writeText(text);
