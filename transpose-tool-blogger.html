@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>移調ツール（Blogger貼り付け用）</title>
+    <style>
+      .transpose-tool-wrapper {
+        --bg: #f5fbf7;
+        --card-bg: #ffffff;
+        --text-main: #203127;
+        --text-sub: #4d6759;
+        --primary: #4ba57f;
+        --primary-dark: #32795b;
+        --border: #d6e8dc;
+        --error: #c84141;
+        --shadow: 0 8px 24px rgba(38, 109, 79, 0.08);
+        margin: 0;
+        font-family: "Noto Sans JP", system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text-main);
+        line-height: 1.6;
+      }
+
+      .transpose-tool-wrapper *,
+      .transpose-tool-wrapper *::before,
+      .transpose-tool-wrapper *::after {
+        box-sizing: border-box;
+      }
+
+      .transpose-tool-wrapper .container {
+        width: min(960px, 92%);
+        margin: 0 auto;
+        padding: 1rem 0;
+      }
+
+      .transpose-tool-wrapper .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+      }
+
+      .transpose-tool-wrapper h1 {
+        margin: 0;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+      }
+
+      .transpose-tool-wrapper .description {
+        margin: 0.5rem 0 0;
+        color: var(--text-sub);
+      }
+
+      .transpose-tool-wrapper h2 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+      }
+
+      .transpose-tool-wrapper .form-grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .transpose-tool-wrapper .form-group label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 0.35rem;
+      }
+
+      .transpose-tool-wrapper .form-group select {
+        width: 100%;
+        border: 1px solid #bdd7c8;
+        border-radius: 10px;
+        padding: 0.6rem 0.75rem;
+        font-size: 1rem;
+        font-family: inherit;
+        color: var(--text-main);
+        background: #fff;
+      }
+
+      .transpose-tool-wrapper .form-group select:focus,
+      .transpose-tool-wrapper .copy-button:focus,
+      .transpose-tool-wrapper .preset-button:focus {
+        outline: 3px solid rgba(75, 165, 127, 0.3);
+        outline-offset: 1px;
+      }
+
+      .transpose-tool-wrapper .preset-area {
+        margin-top: 1rem;
+      }
+
+      .transpose-tool-wrapper .preset-title {
+        margin: 0;
+        font-weight: 500;
+      }
+
+      .transpose-tool-wrapper .preset-buttons {
+        margin-top: 0.55rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .transpose-tool-wrapper .preset-button,
+      .transpose-tool-wrapper .copy-button {
+        border: none;
+        border-radius: 999px;
+        padding: 0.5rem 0.9rem;
+        font-size: 0.95rem;
+        font-family: inherit;
+        background: #e1f2e9;
+        color: var(--primary-dark);
+        cursor: pointer;
+      }
+
+      .transpose-tool-wrapper .copy-button {
+        background: var(--primary);
+        color: #fff;
+      }
+
+      .transpose-tool-wrapper .preset-button:hover,
+      .transpose-tool-wrapper .copy-button:hover {
+        filter: brightness(0.97);
+      }
+
+      .transpose-tool-wrapper .error-message {
+        min-height: 1.5em;
+        margin: 0.75rem 0 0;
+        color: var(--error);
+        font-weight: 500;
+      }
+
+      .transpose-tool-wrapper .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .transpose-tool-wrapper .copy-status {
+        min-height: 1.25rem;
+        margin: 0 0 0.75rem;
+        color: var(--text-sub);
+      }
+
+      .transpose-tool-wrapper .result-list {
+        margin: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+      }
+
+      .transpose-tool-wrapper .result-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.8rem;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.7rem 0.8rem;
+        background: #fcfffd;
+      }
+
+      .transpose-tool-wrapper .result-row dt {
+        font-weight: 500;
+      }
+
+      .transpose-tool-wrapper .result-row dd {
+        margin: 0;
+        font-feature-settings: "tnum";
+        text-align: right;
+      }
+
+      .transpose-tool-wrapper .transpose-description {
+        margin: 0.85rem 0 0;
+        color: var(--text-sub);
+      }
+
+      @media (max-width: 760px) {
+        .transpose-tool-wrapper .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .transpose-tool-wrapper .result-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.2rem;
+        }
+
+        .transpose-tool-wrapper .result-row dd {
+          text-align: left;
+        }
+
+        .transpose-tool-wrapper .result-header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .transpose-tool-wrapper .copy-button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="transpose-tool-wrapper" id="transpose-tool-wrapper">
+      <main class="container">
+        <section class="card" aria-labelledby="transpose-tool-title">
+          <h1 id="transpose-tool-title">移調ツール</h1>
+          <p class="description">キーを半音単位で上げ下げして、移調後のキーを確認できます。</p>
+        </section>
+
+        <section class="card" aria-labelledby="transpose-input-heading">
+          <h2 id="transpose-input-heading">入力</h2>
+          <form id="transpose-form" novalidate>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="base-key">元のキー</label>
+                <select id="base-key" name="baseKey" required>
+                  <option value="C" selected>C</option>
+                  <option value="C# / Db">C# / Db</option>
+                  <option value="D">D</option>
+                  <option value="D# / Eb">D# / Eb</option>
+                  <option value="E">E</option>
+                  <option value="F">F</option>
+                  <option value="F# / Gb">F# / Gb</option>
+                  <option value="G">G</option>
+                  <option value="G# / Ab">G# / Ab</option>
+                  <option value="A">A</option>
+                  <option value="A# / Bb">A# / Bb</option>
+                  <option value="B">B</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="mode">種類</label>
+                <select id="mode" name="mode" required>
+                  <option value="メジャー" selected>メジャー</option>
+                  <option value="マイナー">マイナー</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="semitone-shift">半音の移動量</label>
+                <select id="semitone-shift" name="semitoneShift" required>
+                  <option value="-12">-12</option><option value="-11">-11</option><option value="-10">-10</option><option value="-9">-9</option><option value="-8">-8</option><option value="-7">-7</option><option value="-6">-6</option><option value="-5">-5</option><option value="-4">-4</option><option value="-3">-3</option><option value="-2">-2</option><option value="-1">-1</option><option value="0" selected>0</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option><option value="6">+6</option><option value="7">+7</option><option value="8">+8</option><option value="9">+9</option><option value="10">+10</option><option value="11">+11</option><option value="12">+12</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="preset-area" aria-label="移調操作ボタン">
+              <p class="preset-title">かんたん操作</p>
+              <div class="preset-buttons">
+                <button id="shift-up-button" type="button" class="preset-button">半音上げる</button>
+                <button id="shift-down-button" type="button" class="preset-button">半音下げる</button>
+                <button id="transpose-reset-button" type="button" class="preset-button">リセット</button>
+              </div>
+            </div>
+
+            <p id="transpose-error" class="error-message" role="alert" aria-live="assertive"></p>
+          </form>
+        </section>
+
+        <section class="card" aria-labelledby="transpose-result-heading">
+          <div class="result-header">
+            <h2 id="transpose-result-heading">結果</h2>
+            <button id="transpose-copy-button" class="copy-button" type="button">結果をコピー</button>
+          </div>
+          <p id="transpose-copy-status" class="copy-status" aria-live="polite"></p>
+          <dl id="transpose-result-list" class="result-list"></dl>
+          <p id="transpose-description" class="transpose-description"></p>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      (() => {
+        'use strict';
+
+        const wrapper = document.getElementById('transpose-tool-wrapper');
+        if (!wrapper) return;
+
+        const selectInWrapper = (selector) => wrapper.querySelector(selector);
+
+        const transposeForm = selectInWrapper('#transpose-form');
+        if (!transposeForm) return;
+
+        const baseKeySelect = selectInWrapper('#base-key');
+        const modeSelect = selectInWrapper('#mode');
+        const semitoneShiftSelect = selectInWrapper('#semitone-shift');
+        const transposeError = selectInWrapper('#transpose-error');
+        const transposeResultList = selectInWrapper('#transpose-result-list');
+        const transposeDescription = selectInWrapper('#transpose-description');
+        const copyButton = selectInWrapper('#transpose-copy-button');
+        const copyStatus = selectInWrapper('#transpose-copy-status');
+        const shiftUpButton = selectInWrapper('#shift-up-button');
+        const shiftDownButton = selectInWrapper('#shift-down-button');
+        const resetButton = selectInWrapper('#transpose-reset-button');
+
+        const KEY_LABELS = ['C','C# / Db','D','D# / Eb','E','F','F# / Gb','G','G# / Ab','A','A# / Bb','B'];
+
+        async function writeTextToClipboard(text) {
+          if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'absolute';
+          textarea.style.left = '-9999px';
+          wrapper.appendChild(textarea);
+          textarea.select();
+
+          const isCopied = document.execCommand('copy');
+          wrapper.removeChild(textarea);
+
+          if (!isCopied) throw new Error('copy failed');
+        }
+
+        function normalizeSemitoneShift(shiftValue) {
+          const shift = Number.parseInt(shiftValue, 10);
+          if (!Number.isInteger(shift) || shift < -12 || shift > 12) return null;
+          return shift;
+        }
+
+        function getTransposeValues() {
+          return { baseKey: baseKeySelect.value, mode: modeSelect.value, semitoneShift: normalizeSemitoneShift(semitoneShiftSelect.value) };
+        }
+
+        function validateTransposeInputs(values) {
+          if (!KEY_LABELS.includes(values.baseKey)) return '元のキーを選択してください。';
+          if (values.mode !== 'メジャー' && values.mode !== 'マイナー') return 'メジャー / マイナーを選択してください。';
+          if (values.semitoneShift === null) return '半音の移動量は-12〜+12で選んでください。';
+          return '';
+        }
+
+        function formatSemitoneShift(value) {
+          return `${value > 0 ? '+' : ''}${value}`;
+        }
+
+        function transposeKey(baseKey, semitoneShift) {
+          const baseIndex = KEY_LABELS.indexOf(baseKey);
+          const shiftedIndex = (baseIndex + semitoneShift + 12) % 12;
+          return KEY_LABELS[shiftedIndex];
+        }
+
+        function buildDescriptionText(result) {
+          const absShift = Math.abs(result.semitoneShift);
+          const directionText = result.semitoneShift > 0 ? '上げる' : '下げる';
+          if (result.semitoneShift === 0) return `${result.baseKey}${result.mode}は移動量が0半音なので、${result.transposedKey}${result.mode}のままです。`;
+          return `${result.baseKey}${result.mode}を${absShift}半音${directionText}と${result.transposedKey}${result.mode}になります。曲全体のコードやメロディも同じだけ移動すると、雰囲気を保ったままキー変更できます。`;
+        }
+
+        function renderTransposeResult(result) {
+          const rows = [
+            { label: '移調後のキー', value: `${result.transposedKey}${result.mode}` },
+            { label: '元のキー', value: `${result.baseKey}${result.mode}` },
+            { label: '移動した半音数', value: `${formatSemitoneShift(result.semitoneShift)} 半音` },
+            { label: '種類', value: result.mode },
+          ];
+
+          transposeResultList.innerHTML = rows.map((row) => `<div class="result-row"><dt>${row.label}</dt><dd>${row.value}</dd></div>`).join('');
+          transposeDescription.textContent = buildDescriptionText(result);
+          return rows;
+        }
+
+        function updateTransposeResults() {
+          const values = getTransposeValues();
+          const validationError = validateTransposeInputs(values);
+
+          if (validationError) {
+            transposeError.textContent = validationError;
+            transposeResultList.innerHTML = '';
+            transposeDescription.textContent = '';
+            copyStatus.textContent = '';
+            return null;
+          }
+
+          transposeError.textContent = '';
+          const transposedKey = transposeKey(values.baseKey, values.semitoneShift);
+          return renderTransposeResult({ ...values, transposedKey });
+        }
+
+        async function copyTransposeResult() {
+          const rows = updateTransposeResults();
+          if (!rows) {
+            copyStatus.textContent = '入力を確認してからコピーしてね。';
+            return;
+          }
+
+          const copyText = rows.map((row) => `${row.label}：${row.value}`).join('\n');
+          try {
+            await writeTextToClipboard(copyText);
+            copyStatus.textContent = '結果をコピーしたよ！';
+          } catch (error) {
+            copyStatus.textContent = 'コピーに失敗しました。手動で選択してコピーしてください。';
+          }
+        }
+
+        function changeShift(amount) {
+          const currentShift = normalizeSemitoneShift(semitoneShiftSelect.value);
+          if (currentShift === null) {
+            semitoneShiftSelect.value = '0';
+            updateTransposeResults();
+            return;
+          }
+
+          const nextShift = Math.max(-12, Math.min(12, currentShift + amount));
+          semitoneShiftSelect.value = String(nextShift);
+          updateTransposeResults();
+        }
+
+        function resetTransposeForm() {
+          baseKeySelect.value = 'C';
+          modeSelect.value = 'メジャー';
+          semitoneShiftSelect.value = '0';
+          copyStatus.textContent = '';
+          updateTransposeResults();
+        }
+
+        transposeForm.addEventListener('input', updateTransposeResults);
+        baseKeySelect.addEventListener('change', updateTransposeResults);
+        modeSelect.addEventListener('change', updateTransposeResults);
+        semitoneShiftSelect.addEventListener('change', updateTransposeResults);
+        copyButton.addEventListener('click', copyTransposeResult);
+        shiftUpButton.addEventListener('click', () => changeShift(1));
+        shiftDownButton.addEventListener('click', () => changeShift(-1));
+        resetButton.addEventListener('click', resetTransposeForm);
+
+        updateTransposeResults();
+      })();
+    </script>
+  </body>
+</html>
