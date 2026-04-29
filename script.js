@@ -420,6 +420,36 @@
     'G# / Ab': 'G#',
     'A# / Bb': 'A#',
   };
+  const SCALE_NOTES = {
+    メジャー: {
+      C: ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
+      'C# / Db': ['Db', 'Eb', 'F', 'Gb', 'Ab', 'Bb', 'C'],
+      D: ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'],
+      'D# / Eb': ['Eb', 'F', 'G', 'Ab', 'Bb', 'C', 'D'],
+      E: ['E', 'F#', 'G#', 'A', 'B', 'C#', 'D#'],
+      F: ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'],
+      'F# / Gb': ['Gb', 'Ab', 'Bb', 'B', 'Db', 'Eb', 'F'],
+      G: ['G', 'A', 'B', 'C', 'D', 'E', 'F#'],
+      'G# / Ab': ['Ab', 'Bb', 'C', 'Db', 'Eb', 'F', 'G'],
+      A: ['A', 'B', 'C#', 'D', 'E', 'F#', 'G#'],
+      'A# / Bb': ['Bb', 'C', 'D', 'Eb', 'F', 'G', 'A'],
+      B: ['B', 'C#', 'D#', 'E', 'F#', 'G#', 'A#'],
+    },
+    マイナー: {
+      C: ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb'],
+      'C# / Db': ['C#', 'D#', 'E', 'F#', 'G#', 'A', 'B'],
+      D: ['D', 'E', 'F', 'G', 'A', 'Bb', 'C'],
+      'D# / Eb': ['Eb', 'F', 'Gb', 'Ab', 'Bb', 'Cb', 'Db'],
+      E: ['E', 'F#', 'G', 'A', 'B', 'C', 'D'],
+      F: ['F', 'G', 'Ab', 'Bb', 'C', 'Db', 'Eb'],
+      'F# / Gb': ['F#', 'G#', 'A', 'B', 'C#', 'D', 'E'],
+      G: ['G', 'A', 'Bb', 'C', 'D', 'Eb', 'F'],
+      'G# / Ab': ['G#', 'A#', 'B', 'C#', 'D#', 'E', 'F#'],
+      A: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
+      'A# / Bb': ['Bb', 'C', 'Db', 'Eb', 'F', 'Gb', 'Ab'],
+      B: ['B', 'C#', 'D', 'E', 'F#', 'G', 'A'],
+    },
+  };
 
   const ROMAN_PRESETS = {
     'kawaii future bass': ['IV - V - iii - vi', 'vi - IV - V - I', 'I - V - vi - IV'],
@@ -451,20 +481,16 @@
     return KEY_ALIASES[label] || label;
   }
 
-  function noteFromDegree(root, degree) {
+  function noteFromDegree(mode, key, degree) {
+    const scale = SCALE_NOTES[mode]?.[key];
+    const root = getRootNote(key);
     const index = KEY_ROOTS.indexOf(root);
-    if (index < 0) return null;
-
-    const intervalMap = {
-      '1': 0, '2': 2, '3': 4, '4': 5, '5': 7, '6': 9, '7': 11,
-    };
-
+    if (!scale || index < 0) return null;
     const parsed = degree.match(/^([1-7])(.*)$/);
     if (!parsed) return null;
-
-    const interval = intervalMap[parsed[1]];
+    const degreeIndex = Number.parseInt(parsed[1], 10) - 1;
     const suffix = parsed[2];
-    const note = KEY_ROOTS[(index + interval) % 12];
+    const note = scale[degreeIndex];
 
     if (suffix === 'm') return `${note}m`;
     if (suffix === 'dim') return `${note}dim`;
@@ -478,11 +504,10 @@
 
   function progressionToChords(mode, key, romanProgression) {
     const modeMap = MODE_DEGREE_MAP[mode];
-    const root = getRootNote(key);
 
     return romanProgression.split(' - ').map((roman) => {
       const degree = modeMap[roman] || MODE_DEGREE_MAP['メジャー'][roman] || '1';
-      return noteFromDegree(root, degree);
+      return noteFromDegree(mode, key, degree);
     });
   }
 
