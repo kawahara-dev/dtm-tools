@@ -391,3 +391,170 @@
 
   updateTransposeResults();
 })();
+
+(() => {
+  'use strict';
+
+  const generatorForm = document.getElementById('chord-generator-form');
+  if (!generatorForm) {
+    return;
+  }
+
+  const keySelect = document.getElementById('cp-key');
+  const modeSelect = document.getElementById('cp-mode');
+  const genreSelect = document.getElementById('cp-genre');
+  const barsSelect = document.getElementById('cp-bars');
+  const generateButton = document.getElementById('cp-generate');
+  const regenerateButton = document.getElementById('cp-regenerate');
+  const copyButton = document.getElementById('cp-copy');
+  const errorMessage = document.getElementById('cp-error');
+  const resultList = document.getElementById('cp-result-list');
+  const copyStatus = document.getElementById('cp-copy-status');
+  const commentText = document.getElementById('cp-comment');
+
+  const KEY_ROOTS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const KEY_ALIASES = {
+    'C# / Db': 'C#',
+    'D# / Eb': 'D#',
+    'F# / Gb': 'F#',
+    'G# / Ab': 'G#',
+    'A# / Bb': 'A#',
+  };
+
+  const ROMAN_PRESETS = {
+    'kawaii future bass': ['IV - V - iii - vi', 'vi - IV - V - I', 'I - V - vi - IV'],
+    'lofi hiphop': ['ii - V - I - vi', 'Imaj7 - vi7 - ii7 - V7', 'vi - ii - V - I'],
+    'J-POP': ['I - V - vi - IV', 'IV - V - iii - vi', 'vi - IV - I - V'],
+    '切ない系': ['vi - IV - I - V', 'IV - V - iii - vi', 'ii - V - iii - vi'],
+    '明るい系': ['I - IV - V - I', 'I - V - vi - IV', 'IV - I - V - vi'],
+  };
+
+  const MODE_DEGREE_MAP = {
+    メジャー: {
+      I: '1', ii: '2m', iii: '3m', IV: '4', V: '5', vi: '6m', VII: '7dim',
+      Imaj7: '1maj7', vi7: '6m7', ii7: '2m7', V7: '57',
+    },
+    マイナー: {
+      i: '1m', ii: '2dim', III: '3', iv: '4m', v: '5m', VI: '6', VII: '7',
+      i7: '1m7', iv7: '4m7', V7: '57',
+      I: '1m', ii: '2dim', iii: '3', IV: '4m', V: '5m', vi: '6',
+      Imaj7: '1m(maj7)', vi7: '6maj7', ii7: '2m7b5'
+    },
+  };
+
+  const MODE_COMMENTS = {
+    メジャー: '明るく王道感のあるコード進行です。Aメロやサビの土台として使いやすいです。',
+    マイナー: '少しエモくて深みのある進行です。静かなAメロや切ない展開にハマりやすいです。',
+  };
+
+  function getRootNote(label) {
+    return KEY_ALIASES[label] || label;
+  }
+
+  function noteFromDegree(root, degree) {
+    const index = KEY_ROOTS.indexOf(root);
+    if (index < 0) return null;
+
+    const intervalMap = {
+      '1': 0, '2': 2, '3': 4, '4': 5, '5': 7, '6': 9, '7': 11,
+    };
+
+    const parsed = degree.match(/^([1-7])(.*)$/);
+    if (!parsed) return null;
+
+    const interval = intervalMap[parsed[1]];
+    const suffix = parsed[2];
+    const note = KEY_ROOTS[(index + interval) % 12];
+
+    if (suffix === 'm') return `${note}m`;
+    if (suffix === 'dim') return `${note}dim`;
+    if (suffix === 'maj7') return `${note}maj7`;
+    if (suffix === 'm7') return `${note}m7`;
+    if (suffix === '7') return `${note}7`;
+    if (suffix === 'm7b5') return `${note}m7b5`;
+    if (suffix === 'm(maj7)') return `${note}m(maj7)`;
+    return note;
+  }
+
+  function progressionToChords(mode, key, romanProgression) {
+    const modeMap = MODE_DEGREE_MAP[mode];
+    const root = getRootNote(key);
+
+    return romanProgression.split(' - ').map((roman) => {
+      const degree = modeMap[roman] || MODE_DEGREE_MAP['メジャー'][roman] || '1';
+      return noteFromDegree(root, degree);
+    });
+  }
+
+  function generateProgression() {
+    const key = keySelect.value;
+    const mode = modeSelect.value;
+    const genre = genreSelect.value;
+    const bars = Number.parseInt(barsSelect.value, 10);
+    const presets = ROMAN_PRESETS[genre];
+
+    if (!presets || !key || !mode || ![4, 8].includes(bars)) {
+      errorMessage.textContent = '入力内容を確認してね。';
+      return null;
+    }
+
+    errorMessage.textContent = '';
+    const selected = presets[Math.floor(Math.random() * presets.length)];
+    const baseRomans = selected.split(' - ');
+    const cycle = bars === 8 ? [...baseRomans, ...baseRomans] : baseRomans;
+    const romanText = cycle.join(' - ');
+    const chordText = progressionToChords(mode, key, romanText).join(' - ');
+
+    return {
+      keyLabel: `${key}${mode}`,
+      genre,
+      chordText,
+      romanText,
+      comment: MODE_COMMENTS[mode],
+    };
+  }
+
+  function renderResult(result) {
+    const rows = [
+      { label: '選択したキー', value: result.keyLabel },
+      { label: '選択したジャンル', value: result.genre },
+      { label: '生成されたコード進行', value: result.chordText },
+      { label: 'ローマ数字表記', value: result.romanText },
+    ];
+
+    resultList.innerHTML = rows.map((row) => `\n      <div class="result-row"><dt>${row.label}</dt><dd>${row.value}</dd></div>\n    `).join('');
+    commentText.textContent = `コメント：${result.comment}`;
+    return rows;
+  }
+
+  async function copyResult() {
+    const rows = Array.from(resultList.querySelectorAll('.result-row'));
+    if (!rows.length) {
+      copyStatus.textContent = '先に生成してからコピーしてね。';
+      return;
+    }
+
+    const text = rows.map((row) => `${row.querySelector('dt').textContent}：${row.querySelector('dd').textContent}`).join('\n') + `\n${commentText.textContent}`;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      copyStatus.textContent = '結果をコピーしたよ！';
+    } catch (error) {
+      copyStatus.textContent = 'コピーに失敗しました。手動でコピーしてください。';
+    }
+  }
+
+  function handleGenerate() {
+    const result = generateProgression();
+    if (!result) return;
+    renderResult(result);
+    copyStatus.textContent = '';
+  }
+
+  generatorForm.addEventListener('change', handleGenerate);
+  generateButton.addEventListener('click', handleGenerate);
+  regenerateButton.addEventListener('click', handleGenerate);
+  copyButton.addEventListener('click', copyResult);
+
+  handleGenerate();
+})();

@@ -268,3 +268,31 @@ h2 {
   background: #f7fcf9;
   color: var(--text-sub);
 }
+
+.helper-text {
+  margin: 0 0 1rem;
+  color: var(--text-sub);
+}
+
+.generator-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+
+.generator-actions .copy-button,
+.generator-actions .preset-button {
+  min-width: 9rem;
+}
+
+@media (max-width: 760px) {
+  .generator-actions {
+    flex-direction: column;
+  }
+
+  .generator-actions .copy-button,
+  .generator-actions .preset-button {
+    width: 100%;
+  }
+}
